@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JobMatch</title>
+<style>
+  body { font: 16px/1.5 system-ui, sans-serif; max-width: 760px; margin: 2rem auto; padding: 0 1rem; color: #1a1a1a; background: #fff; }
+  textarea { width: 100%; min-height: 14rem; font: inherit; padding: .5rem; box-sizing: border-box; }
+  button { font: inherit; padding: .4rem 1rem; cursor: pointer; }
+  .card { border: 1px solid #ddd; border-radius: 6px; padding: .75rem 1rem; margin: .75rem 0; }
+  .card h2 { font-size: 1.05rem; margin: 0; }
+  .meta { color: #555; font-size: .9rem; }
+  .vote[aria-pressed="true"] { background: #d9f2e3; }
+</style>
+</head>
+<body>
+<h1>JobMatch</h1>
+<label for="resume">Paste your resume (plain text)</label>
+<textarea id="resume"></textarea>
+<p><button id="go">Match</button> <span id="status" role="status"></span></p>
+<div id="results"></div>
+<p class="meta">Jobs from <a href="https://jobicy.com">Jobicy</a>.</p>
+<script>
+const $ = id => document.getElementById(id);
+
+$('go').onclick = async () => {
+  $('go').disabled = true;
+  $('results').replaceChildren();
+  $('status').textContent = 'Matching… this can take a minute.';
+  try {
+    const r = await fetch('/match', {method: 'POST', headers: {'Content-Type': 'application/json'},
+                                     body: JSON.stringify({resume: $('resume').value})});
+    if (!r.ok) throw new Error(await r.text());
+    const jobs = await r.json();
+    $('status').textContent = `${jobs.length} matches`;
+    $('results').append(...jobs.map(card));
+  } catch (e) {
+    $('status').textContent = 'Error: ' + e.message;
+  }
+  $('go').disabled = false;
+};
+
+function card(j) {
+  const el = document.createElement('article');
+  el.className = 'card';
+  el.innerHTML = '<h2><a target="_blank" rel="noopener"></a></h2><div class="meta"></div><p></p>' +
+    '<button class="vote" aria-pressed="false" aria-label="Good match">👍</button> ' +
+    '<button class="vote" aria-pressed="false" aria-label="Bad match">👎</button>';
+  // Feed data goes in via textContent / checked href only: titles and URLs come from a third party.
+  const a = el.querySelector('a');
+  a.textContent = j.title;
+  if (/^https?:\/\//.test(j.url)) a.href = j.url;
+  el.querySelector('.meta').textContent = `${j.company} · ${j.location} · score ${j.score}`;
+  el.querySelector('p').textContent = j.reason;
+  el.querySelectorAll('.vote').forEach((b, i) => b.onclick = async () => {
+    const r = await fetch('/feedback', {method: 'POST', headers: {'Content-Type': 'application/json'},
+                                        body: JSON.stringify({job_id: j.job_id, verdict: i ? 'down' : 'up'})});
+    if (r.ok) el.querySelectorAll('.vote').forEach((x, k) => x.setAttribute('aria-pressed', k === i));
+  });
+  return el;
+}
+</script>
+</body>
+</html>

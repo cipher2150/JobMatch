@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 -I -)",
+      "Bash(docker info *)",
+      "Bash(python3.11 -m venv .venv)",
+      "Bash(.venv/bin/pip install *)",
+      "Bash(.venv/bin/pip freeze *)",
+      "Bash(.venv/bin/python -c \"from google.genai import types; print\\(hasattr\\(types,'HttpRetryOptions'\\), [f for f in types.GenerateContentConfig.model_fields if 'schema' in f or 'mime' in f]\\)\")",
+      "Bash(.venv/bin/python -)",
+      "Bash(.venv/bin/python -c \"import json;[json.loads\\(l\\) for l in open\\('evals/cases.jsonl'\\)];print\\(sum\\(1 for _ in open\\('evals/cases.jsonl'\\)\\),'cases ok'\\)\")",
+      "Bash(.venv/bin/pytest -q)",
+      "Bash(npm --version)",
+      "Bash(neon --version)",
+      "Bash(npm i *)",
+      "Bash(neon init *)",
+      "Bash(npm run *)",
+      "Bash(neon config *)",
+      "Bash(pkill -f 'uvicorn main:app --port 8000')",
+      "Bash(awk -F= '/^[A-Z_]+=/{print $1 \": \" \\(length\\($0\\)>length\\($1\\)+1 && $2!=\"\\\\\"\\\\\"\" ? \"set\" : \"EMPTY\"\\)}' .env)"
+    ]
+  }
+}

@@ -1,0 +1,5 @@
+services:
+  app:
+    build: .
+    env_file: .env
+    ports: ["8000:8080"]  # same port as `uvicorn main:app`, so evals/run.py works against either

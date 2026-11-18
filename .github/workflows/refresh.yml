@@ -1,0 +1,15 @@
+name: refresh
+on:
+  schedule:
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: POST /admin/refresh
+        env:
+          APP_URL: ${{ secrets.APP_URL }}
+          ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN }}
+        run: curl -fsS --max-time 900 -X POST -H "X-Admin-Token: $ADMIN_TOKEN" "$APP_URL/admin/refresh"
